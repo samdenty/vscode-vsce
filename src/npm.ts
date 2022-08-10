@@ -69,7 +69,10 @@ function checkNPM(cancellationToken?: CancellationToken): Promise<void> {
 function getNpmDependencies(cwd: string): Promise<string[]> {
 	return checkNPM()
 		.then(() =>
-			exec('npm list --production --parseable --depth=99999 --loglevel=error', { cwd, maxBuffer: 5000 * 1024 })
+			exec('npm list --production --parseable --depth=99999 --loglevel=error 2> /dev/null || :', {
+				cwd,
+				maxBuffer: 5000 * 1024,
+			})
 		)
 		.then(({ stdout }) => stdout.split(/[\r\n]/).filter(dir => path.isAbsolute(dir)));
 }
