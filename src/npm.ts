@@ -220,9 +220,18 @@ export async function getDependencies(
 	useYarn?: boolean,
 	packagedDependencies?: string[]
 ): Promise<string[]> {
-	return (useYarn !== undefined ? useYarn : await detectYarn(cwd))
+	let deps = (useYarn !== undefined ? useYarn : await detectYarn(cwd))
 		? await getYarnDependencies(cwd, packagedDependencies)
 		: await getNpmDependencies(cwd);
+
+	try {
+		const link = await fs.promises.readlink(cwd);
+		const pathToReplace = path.resolve(path.dirname(cwd), link);
+
+		deps = deps.map(dep => dep.replace(pathToReplace, cwd));
+	} catch (e) {}
+
+	return deps;
 }
 
 export function getLatestVersion(name: string, cancellationToken?: CancellationToken): Promise<string> {
